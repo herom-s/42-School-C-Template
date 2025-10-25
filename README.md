@@ -1,7 +1,3 @@
-Here’s a clean, simple README for your repository **42‑School‑C‑Template**:
-
----
-
 # 42-School-C-Template
 
 A template repository for C projects at 42 School.
