@@ -52,7 +52,6 @@ def create_directory_structure(has_bonus=False):
         os.makedirs(d, exist_ok=True)
         print(f"[OK] Created directory: {d}")
 
-
 def create_makefile(project_name, has_bonus=False, has_libft=False, has_minilibx=False):
     """Create a basic Makefile"""
     # Library sections
@@ -62,7 +61,7 @@ def create_makefile(project_name, has_bonus=False, has_libft=False, has_minilibx
     lib_fclean_rules = ""
     lib_deps = ""
     lib_links = ""
-    
+
     if has_libft:
         lib_vars += "\n# Libft\nLIBFT_DIR = libft\nLIBFT = $(LIBFT_DIR)/libft.a"
         lib_deps += " $(LIBFT)"
@@ -70,7 +69,7 @@ def create_makefile(project_name, has_bonus=False, has_libft=False, has_minilibx
         lib_rules += "\n$(LIBFT):\n\t@make -C $(LIBFT_DIR)\n"
         lib_clean_rules += "\t@make -C $(LIBFT_DIR) clean\n"
         lib_fclean_rules += "\t@make -C $(LIBFT_DIR) fclean\n"
-    
+
     if has_minilibx:
         lib_vars += "\n# Minilibx\nMLX_DIR = minilibx\nMLX = $(MLX_DIR)/libmlx.a"
         lib_deps += " $(MLX)"
@@ -78,28 +77,31 @@ def create_makefile(project_name, has_bonus=False, has_libft=False, has_minilibx
         lib_rules += "\n$(MLX):\n\t@make -C $(MLX_DIR)\n"
         lib_clean_rules += "\t@make -C $(MLX_DIR) clean\n"
         lib_fclean_rules += "\t@make -C $(MLX_DIR) fclean\n"
-    
+
     # Includes
     includes = "-I./inc"
     if has_libft:
         includes += " -I$(LIBFT_DIR)"
     if has_minilibx:
         includes += " -I$(MLX_DIR)"
-    
-    # Bonus section
+
+    # Bonus section - only variables here
+    bonus_vars = ""
     bonus_section = ""
+    bonus_clean = ""
     if has_bonus:
-        bonus_vars = "\nBONUS_DIR = src_bonus\nBONUS_FILES = main_bonus.c\nBONUS_SRC = $(addprefix $(BONUS_DIR)/, $(BONUS_FILES))\nBONUS_OBJ = $(BONUS_SRC:$(BONUS_DIR)/%.c=$(OBJ_DIR)/%.o)\n"
+        bonus_vars = "\nBONUS_DIR = src_bonus\nBONUS_OBJ_DIR = obj_bonus\nBONUS_FILES = main_bonus.c\nBONUS_SRC = $(addprefix $(BONUS_DIR)/, $(BONUS_FILES))\nBONUS_OBJ = $(BONUS_SRC:$(BONUS_DIR)/%.c=$(BONUS_OBJ_DIR)/%.o)\n"
+        # Rules will be added after the main rules
         bonus_rule = "\nbonus:" + lib_deps + " $(BONUS_OBJ)\n\t$(CC) $(CFLAGS) $(BONUS_OBJ)" + lib_links + " -o $(NAME)\n\t@echo \"[OK] $(NAME) bonus compiled successfully\"\n"
-        bonus_obj_rule = "\n$(OBJ_DIR)/%.o: $(BONUS_DIR)/%.c\n\t@mkdir -p $(OBJ_DIR)\n\t$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@\n"
-        bonus_section = bonus_vars + bonus_rule + bonus_obj_rule
-    
+        bonus_obj_rule = "\n$(BONUS_OBJ_DIR)/%.o: $(BONUS_DIR)/%.c\n\t@mkdir -p $(BONUS_OBJ_DIR)\n\t$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@\n"
+        bonus_section = bonus_rule + bonus_obj_rule
+        bonus_clean = "\t@rm -rf $(BONUS_OBJ_DIR)\n"
+
     phony_targets = "all clean fclean re"
     if has_bonus:
         phony_targets += " bonus"
-    
-    makefile_content = f"""
 
+    makefile_content = f"""
 NAME = {project_name}
 
 CC = cc
@@ -112,7 +114,7 @@ INC_DIR = inc
 
 SRC_FILES = main.c
 SRC = $(addprefix $(SRC_DIR)/, $(SRC_FILES))
-OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o){lib_vars}{bonus_section}
+OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o){lib_vars}{bonus_vars}
 all: $(NAME)
 {lib_rules}$(NAME):{lib_deps} $(OBJ)
 \t$(CC) $(CFLAGS) $(OBJ){lib_links} -o $(NAME)
@@ -121,10 +123,10 @@ all: $(NAME)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 \t@mkdir -p $(OBJ_DIR)
 \t$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
+{bonus_section}
 clean:
 \t@rm -rf $(OBJ_DIR)
-{lib_clean_rules}\t@echo "[OK] Object files removed"
+{bonus_clean}{lib_clean_rules}\t@echo "[OK] Object files removed"
 
 fclean: clean
 \t@rm -f $(NAME)
@@ -134,11 +136,10 @@ re: fclean all
 
 .PHONY: {phony_targets}
 """
-    
+
     with open("Makefile", 'w') as f:
         f.write(makefile_content)
     print(f"[OK] Created Makefile")
-
 
 def create_main_c():
     """Create a basic main.c file"""
