@@ -1,9 +1,9 @@
 name: norminette
 on:
   push:
-    branches: [ "improvements" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "improvements" ]
+    branches: [ "master" ]
   workflow_dispatch:
 jobs:
   norminette:
