@@ -26,7 +26,7 @@ This project provides:
 2. Run the script (optional) to create a new project based on the template:
 
    ```bash
-   python3 create_42_project.py MyNewProject
+   python3 create_42_project.py
    ```
 3. Update the project name, author, subject, etc. as needed.
 4. Start coding in `src/` and create headers in `inc/`.
